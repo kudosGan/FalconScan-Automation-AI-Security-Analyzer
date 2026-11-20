@@ -1,5 +1,5 @@
 # Publishes the public website (landing page only) to GitHub Pages.
-# The application code is never published: the site is built from frontend/site.html, which includes none of it. Run it by hand from the Actions tab too.
+# The application code is never published: the site is built from frontend/site.html, which includes none of it. Run it by hand from the Actions tab too. It is the only workflow that publishes anything.
 name: Publish public website
 
 on:
