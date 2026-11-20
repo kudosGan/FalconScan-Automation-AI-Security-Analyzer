@@ -1,0 +1,37 @@
+{
+  "name": "employee-onboarding",
+  "properties": {
+    "displayName": "Employee Onboarding",
+    "state": "Started",
+    "definition": {
+      "triggers": {
+        "When_an_item_is_created": {
+          "type": "ApiConnection",
+          "inputs": { "host": { "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline" } }
+        }
+      },
+      "actions": {
+        "Create_user": {
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "https://hr-api.example.com/users",
+            "body": { "name": "@triggerBody()?['Title']", "password": "Welcome123!" }
+          }
+        },
+        "Notify_Teams": {
+          "type": "ApiConnection",
+          "inputs": { "host": { "apiId": "/providers/Microsoft.PowerApps/apis/shared_teams" } }
+        },
+        "Email_manager": {
+          "type": "ApiConnection",
+          "inputs": { "host": { "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365" } }
+        },
+        "Save_to_SQL": {
+          "type": "ApiConnection",
+          "inputs": { "host": { "apiId": "/providers/Microsoft.PowerApps/apis/shared_sql" } }
+        }
+      }
+    }
+  }
+}

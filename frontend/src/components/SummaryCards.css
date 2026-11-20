@@ -1,0 +1,4 @@
+.stat-value { font-size:26px; font-weight:700; }
+.stat.high .stat-value { color:var(--high); }
+.stat.medium .stat-value { color:var(--medium); }
+.stat.low .stat-value { color:var(--low); }

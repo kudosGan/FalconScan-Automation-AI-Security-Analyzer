@@ -1,0 +1,20 @@
+.menubar { display:flex; background:#f0f0f0; border-bottom:1px solid #c9c9c9; font-size:12px; position:relative; z-index:20; }
+.menu { position:relative; }
+.menu > button { background:none; border:0; padding:4px 10px; cursor:default; font-size:12px; }
+.menu > button:hover, .menu > button.on { background:#cfe2ff; }
+.menu-backdrop { position:fixed; inset:0; z-index:-1; }
+.menu-drop { position:absolute; top:100%; left:0; min-width:260px; background:#f8f8f8; border:1px solid #b5b5b5; box-shadow:2px 3px 6px rgba(0,0,0,.25); padding:2px 0; }
+.menu-drop button { display:flex; justify-content:space-between; gap:24px; width:100%; background:none; border:0; padding:4px 18px; font-size:12px; text-align:left; cursor:default; }
+.menu-drop button:hover:not(:disabled) { background:#3b78d8; color:#fff; }
+.menu-drop button:disabled { color:#9a9a9a; }
+.menu-drop kbd { font-family:inherit; color:inherit; opacity:.7; }
+.menu-drop hr { border:0; border-top:1px solid #d6d6d6; margin:3px 0; }
+.menu-item { position:relative; }
+.menu-item > button { display:flex; justify-content:space-between; gap:24px; width:100%; background:none; border:0; padding:4px 18px; font-size:12px; text-align:left; cursor:default; }
+.menu-item:hover > button:not(:disabled) { background:#3b78d8; color:#fff; }
+.menu-sub { display:none; left:100%; top:-3px; }
+.menu-item:hover > .menu-sub { display:block; }
+.menu-sub { max-height:70vh; overflow:auto; }
+.mi { display:inline-block; width:18px; font-style:normal; text-align:center; margin-left:-12px; margin-right:4px; color:#3b78d8; }
+.menu-drop button:hover:not(:disabled) .mi, .menu-item:hover > button:not(:disabled) .mi { color:#fff; }
+.menu-drop button:disabled .mi { color:#b5b5b5; }

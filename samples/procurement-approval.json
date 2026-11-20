@@ -1,0 +1,32 @@
+{
+  "name": "procurement-approval",
+  "properties": {
+    "displayName": "Procurement Approval",
+    "state": "Stopped",
+    "definition": {
+      "triggers": {
+        "manual": { "type": "Request", "kind": "Button", "inputs": { "schema": {} } }
+      },
+      "actions": {
+        "Start_approval": {
+          "type": "ApiConnection",
+          "inputs": { "host": { "apiId": "/providers/Microsoft.PowerApps/apis/shared_approvals" } }
+        },
+        "Always_succeed": {
+          "type": "Terminate",
+          "inputs": { "runStatus": "Succeeded" }
+        },
+        "Post_to_vendor": {
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "https://vendor.example.com/orders",
+            "headers": { "x-api-key": "sk_live_51HxExampleKey" },
+            "authentication": { "type": "Raw", "value": "abc" }
+          },
+          "runtimeConfiguration": { "secureData": { "properties": ["inputs", "outputs"] } }
+        }
+      }
+    }
+  }
+}

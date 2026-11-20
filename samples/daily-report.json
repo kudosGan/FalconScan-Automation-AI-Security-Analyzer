@@ -1,0 +1,19 @@
+{
+  "properties": {
+    "displayName": "Daily Reporting",
+    "state": "Started",
+    "definition": {
+      "triggers": { "Recurrence": { "type": "Recurrence", "recurrence": { "frequency": "Day", "interval": 1 } } },
+      "actions": {
+        "Get_rows": {
+          "type": "ApiConnection",
+          "inputs": { "host": { "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps" } }
+        },
+        "Send_summary": {
+          "type": "ApiConnection",
+          "inputs": { "host": { "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365" } }
+        }
+      }
+    }
+  }
+}

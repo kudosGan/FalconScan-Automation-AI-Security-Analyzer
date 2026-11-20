@@ -1,0 +1,80 @@
+{
+  "name": "6f1c2a3e-1111-4222-8333-444455556666",
+  "type": "Microsoft.ProcessSimple/environments/flows",
+  "properties": {
+    "displayName": "Invoice Intake (real export format)",
+    "state": "Started",
+    "connectionReferences": {
+      "shared_sharepointonline": {
+        "connectionName": "shared-sharepointonl-aaaa",
+        "source": "Invoker",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline",
+        "tier": "NotSpecified"
+      },
+      "shared_office365": {
+        "connectionName": "shared-office365-bbbb",
+        "source": "Invoker",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_office365",
+        "tier": "NotSpecified"
+      },
+      "shared_sql": {
+        "connectionName": "shared-sql-cccc",
+        "source": "Invoker",
+        "id": "/providers/Microsoft.PowerApps/apis/shared_sql",
+        "tier": "Premium"
+      }
+    },
+    "definition": {
+      "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+      "contentVersion": "1.0.0.0",
+      "triggers": {
+        "manual": {
+          "type": "Request",
+          "kind": "Http",
+          "inputs": { "schema": { "type": "object" }, "triggerAuthenticationType": "All" }
+        }
+      },
+      "actions": {
+        "Get_item": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": { "connectionName": "shared_sharepointonline", "operationId": "GetItem", "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline" },
+            "parameters": { "dataset": "https://contoso.sharepoint.com/sites/finance", "table": "Invoices", "id": 1 },
+            "authentication": "@parameters('$authentication')"
+          },
+          "runAfter": {}
+        },
+        "Notify_accountant": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": { "connectionName": "shared_office365", "operationId": "SendEmailV2", "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365" },
+            "parameters": { "emailMessage/To": "jane.doe.private@gmail.com", "emailMessage/Subject": "New invoice", "emailMessage/Body": "@body('Get_item')" },
+            "authentication": "@parameters('$authentication')"
+          },
+          "runAfter": { "Get_item": ["Succeeded"] }
+        },
+        "Post_to_erp": {
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "https://erp.example.com/api/invoices",
+            "authentication": { "type": "Basic", "username": "svc-flow", "password": "P@ssw0rd-literal" },
+            "body": "@body('Get_item')"
+          },
+          "runAfter": { "Notify_accountant": ["Succeeded"] },
+          "runtimeConfiguration": { "secureData": { "properties": ["inputs", "outputs"] } }
+        },
+        "Safe_call": {
+          "type": "Http",
+          "inputs": {
+            "method": "GET",
+            "uri": "https://api.example.com/status",
+            "authentication": { "type": "ActiveDirectoryOAuth", "secret": "@parameters('ClientSecret')" }
+          },
+          "runAfter": { "Post_to_erp": ["Succeeded"] },
+          "runtimeConfiguration": { "secureData": { "properties": ["inputs", "outputs"] } }
+        }
+      }
+    }
+  }
+}

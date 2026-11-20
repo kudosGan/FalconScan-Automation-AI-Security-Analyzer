@@ -1,0 +1,21 @@
+.wb { display:flex; flex-direction:column; height:100vh; font-size:12px; background:#f0f0f0; }
+.wb-title { display:flex; align-items:center; gap:10px; padding:4px 10px; background:#fff; border-bottom:2px solid var(--cyan); }
+.wb-title a { display:flex; align-items:center; gap:8px; font-weight:700; text-decoration:none; color:var(--navy); font-size:13px; }
+.wb-title a small { font-weight:400; color:var(--brand); margin-left:4px; }
+.wb-title .grow { flex:1; }
+.perspectives { display:flex; align-items:center; gap:2px; padding:3px 6px; background:#f7f7f7; border-bottom:1px solid #c9c9c9; }
+.perspectives button { background:none; border:1px solid transparent; border-radius:3px; padding:2px 10px; font-size:12px; cursor:pointer; }
+.perspectives button:hover { background:#e4ecfa; }
+.perspectives button.on { background:#d4f0fc; border-color:var(--cyan); font-weight:600; }
+.perspectives .sep { width:1px; height:16px; background:#ccc; margin:0 6px; }
+.wb-body { flex:1; display:flex; min-height:0; }
+.wb-right { flex:1; display:flex; flex-direction:column; min-width:0; min-height:0; }
+.wb-right .bottom { height:var(--bottom-h, 300px); flex-shrink:0; overflow:hidden; }
+.wb.triage .center { display:none; }
+.wb.triage .wb-right .bottom { flex:1; height:auto; }
+.wb.analysis .wb-right .bottom { display:none; }
+.analysis-pane { padding:var(--gap); background:var(--bg); min-height:100%; }
+.statusbar { padding:2px 10px; background:#e9edf3; border-top:1px solid #c9c9c9; color:#555; display:flex; justify-content:space-between; }
+.filter-chip { display:flex; justify-content:space-between; align-items:center; padding:3px 10px; background:#fff8db; border-bottom:1px solid #f1e3a1; font-size:12px; }
+.filter-chip button { background:none; border:0; color:var(--brand); cursor:pointer; font-size:12px; }
+.wb.dashboard .wb-right .bottom { display:none; }

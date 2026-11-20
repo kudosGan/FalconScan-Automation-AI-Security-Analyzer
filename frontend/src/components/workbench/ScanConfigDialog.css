@@ -1,0 +1,16 @@
+.cfg { width:860px; max-width:94vw; background:#f3f3f3; border:1px solid #888; box-shadow:0 6px 24px rgba(0,0,0,.4); font-size:12px; display:flex; flex-direction:column; max-height:86vh; }
+.cfg-top { display:flex; gap:var(--gap); align-items:center; padding:8px 12px; background:#fff; border-bottom:1px solid #ccc; flex-wrap:wrap; }
+.cfg-top input { padding:3px 6px; border:1px solid #888; font-size:12px; width:200px; }
+.cfg-top button, .cfg-foot button { padding:3px 10px; font-size:12px; border:1px solid #888; background:#e6e6e6; cursor:pointer; }
+.cfg-top button:hover { background:#cfe2ff; }
+.cfg-top .grow { flex:1; }
+.cfg-body { overflow:auto; background:#fff; flex:1; min-height:200px; }
+.cfg-table { width:100%; border-collapse:collapse; }
+.cfg-table th { text-align:left; font-weight:normal; padding:3px 8px; background:linear-gradient(#fafafa,#e8e8e8); border-bottom:1px solid #d0d0d0; position:sticky; top:0; }
+.cfg-table td { padding:3px 8px; border-bottom:1px solid #eee; }
+.cfg-table tr.off td { color:#999; }
+.cfg-table select { font-size:12px; }
+.cfg-foot { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-top:1px solid #ccc; gap:8px; }
+.cfg-foot .primary { background:#cfe2ff; }
+.cfg-foot .btns { display:flex; gap:6px; }
+.cfg-note { color:#666; }

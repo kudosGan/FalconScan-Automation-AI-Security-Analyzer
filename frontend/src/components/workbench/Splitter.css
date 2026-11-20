@@ -1,0 +1,9 @@
+.splitter { flex-shrink:0; background:transparent; position:relative; z-index:5; touch-action:none; }
+.splitter-x { width:5px; margin:0 -2px; cursor:col-resize; }
+.splitter-y { height:5px; margin:-2px 0; cursor:row-resize; }
+.splitter:hover, .splitter:focus-visible, .splitter:active { background:var(--cyan); opacity:.7; outline:none; }
+body.resizing { user-select:none; }
+body.resizing-x { cursor:col-resize; }
+body.resizing-y { cursor:row-resize; }
+/* The bottom panel is hidden in these views, so its bar goes too. */
+.wb.analysis .splitter-y, .wb.dashboard .splitter-y, .wb.triage .splitter-y { display:none; }

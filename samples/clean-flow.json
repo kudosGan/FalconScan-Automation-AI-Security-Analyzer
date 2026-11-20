@@ -1,0 +1,11 @@
+{
+  "definition": {
+    "triggers": { "Recurrence": { "type": "Recurrence", "recurrence": { "frequency": "Day", "interval": 1 } } },
+    "actions": {
+      "Get_Items": {
+        "type": "ApiConnection",
+        "inputs": { "host": { "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline" } }
+      }
+    }
+  }
+}

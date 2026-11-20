@@ -1,0 +1,17 @@
+.wiz-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; z-index:50; }
+.wiz { width:520px; background:#f3f3f3; border:1px solid #888; box-shadow:0 6px 24px rgba(0,0,0,.4); font-size:12px; }
+.wiz-title { padding:6px 10px; background:#fff; border-bottom:1px solid #ccc; display:flex; justify-content:space-between; }
+.wiz-head { background:#fff; padding:10px 14px; border-bottom:1px solid #ccc; }
+.wiz-head h4 { margin:0 0 2px; font-size:13px; }
+.wiz-body { padding:14px; min-height:210px; }
+.wiz-row { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.wiz-row label { width:110px; }
+.wiz-row input:not([hidden]) { flex:1; padding:3px 5px; border:1px solid #888; font-size:12px; }
+.wiz-foot { display:flex; justify-content:flex-end; gap:6px; padding:10px 14px; border-top:1px solid #ccc; }
+.wiz-foot button { min-width:76px; padding:4px 10px; font-size:12px; border:1px solid #888; background:#e6e6e6; cursor:pointer; }
+.wiz-foot button:disabled { color:#999; border-color:#bbb; cursor:default; }
+.wiz-foot button.primary { background:#cfe2ff; }
+.wiz-browse { width:28px; height:24px; flex-shrink:0; border:1px solid #888; background:#e6e6e6; cursor:pointer; font-size:13px; line-height:1; padding:0; }
+.wiz-browse:hover { background:#cfe2ff; }
+.wiz-note { margin:4px 0 0 118px; font-size:11px; color:#067647; }
+.wiz-note.muted { color:var(--muted); }

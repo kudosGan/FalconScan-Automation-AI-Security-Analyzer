@@ -1,0 +1,4 @@
+.modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.45); display:flex; align-items:center; justify-content:center; }
+.modal { background:#fff; border-radius:10px; width:min(900px,92vw); max-height:85vh; display:flex; flex-direction:column; }
+.modal-head { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--line); }
+.json { margin:0; padding:16px; overflow:auto; background:#111827; color:#d6e2ff; font-size:12px; }

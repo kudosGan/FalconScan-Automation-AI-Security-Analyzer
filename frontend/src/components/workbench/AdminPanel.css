@@ -1,0 +1,14 @@
+.admin-pane .subtabs { display:flex; gap:4px; margin:6px 0 10px; }
+.admin-pane .subtabs button { background:#fff; border:1px solid var(--line); border-radius:3px; padding:3px 12px; cursor:pointer; font-size:12px; }
+.admin-pane .subtabs button.on { background:#d4f0fc; border-color:var(--cyan); font-weight:600; }
+.admin-pane table { margin-bottom:10px; }
+.admin-pane select, .admin-pane button { font-size:12px; }
+.admin-form { display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin:6px 0 10px; }
+.admin-form input, .admin-form select, .inline-form input { padding:3px 6px; border:1px solid #9aa4b5; border-radius:3px; font:inherit; font-size:12px; }
+.admin-form input { min-width:150px; }
+.inline-form { display:inline-flex; gap:4px; align-items:center; }
+.admin-msg { background:#e8f6fd; border:1px solid #b6e3f7; border-radius:3px; padding:4px 8px; font-size:12px; }
+.chain { font-size:12px; font-weight:600; padding:2px 8px; border-radius:10px; }
+.chain.ok { background:#d1fadf; color:#05603a; }
+.chain.bad { background:#fee4e2; color:#912018; }
+.bad-text { color:var(--high); font-weight:600; }

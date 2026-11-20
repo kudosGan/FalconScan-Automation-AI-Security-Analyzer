@@ -1,0 +1,7 @@
+.center { flex:1; display:flex; flex-direction:column; min-height:0; min-width:0; background:#fff; }
+.center-body { flex:1; overflow:auto; min-height:0; }
+.pane-pad { padding:var(--gap) 12px; font-size:13px; }
+.pane-pad h3 { margin-top:0; }
+.pane-actions { display:flex; gap:8px; flex-wrap:wrap; margin:12px 0; }
+.prop-table td { padding:3px 14px 3px 0; font-size:12px; vertical-align:top; }
+.prop-table td:first-child { color:#666; }

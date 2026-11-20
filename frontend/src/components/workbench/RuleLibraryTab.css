@@ -1,0 +1,10 @@
+.rules-tab { padding:10px 14px; font-size:12px; overflow:auto; height:100%; }
+.rules-tab h3 { margin:6px 0; font-size:14px; }
+.rules-tab section { margin-bottom:16px; }
+.rules-table { border-collapse:collapse; width:100%; }
+.rules-table th, .rules-table td { border:1px solid #d7dbe5; padding:3px 6px; text-align:left; vertical-align:top; }
+.rules-table th { background:#eef1f7; }
+.rules-table input:not([type=checkbox]) { width:100%; padding:2px 4px; font:inherit; }
+.rules-table tr.off { color:#8a8f9c; }
+.rules-filter { display:flex; gap:10px; align-items:center; margin:6px 0; }
+.rules-filter input { padding:3px 6px; min-width:240px; }

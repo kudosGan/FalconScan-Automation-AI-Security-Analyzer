@@ -1,0 +1,39 @@
+{
+  "name": "risky-flow",
+  "properties": {
+    "displayName": "Risky Demo Flow",
+    "state": "Started",
+    "definition": {
+      "triggers": {
+        "manual": { "type": "Request", "kind": "Http", "inputs": { "schema": {} } }
+      },
+      "actions": {
+        "Call_Partner_API": {
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "http://partner.example.com/api/orders",
+            "headers": { "Authorization": "Bearer abc123literal" }
+          }
+        },
+        "Check": {
+          "type": "If",
+          "actions": {
+            "Send_Mail": {
+              "type": "ApiConnection",
+              "inputs": { "host": { "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365" } }
+            }
+          },
+          "else": {
+            "actions": {
+              "Save": {
+                "type": "Http",
+                "inputs": { "method": "GET", "uri": "https://api.example.com/x", "authentication": { "type": "ManagedServiceIdentity" } }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

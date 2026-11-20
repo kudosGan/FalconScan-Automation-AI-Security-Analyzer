@@ -1,0 +1,22 @@
+{
+  "name": "InvoiceBot",
+  "description": "Processes supplier invoices (synthetic sample)",
+  "main": "Main.xaml",
+  "dependencies": {
+    "UiPath.System.Activities": "[24.10.5]",
+    "UiPath.UIAutomation.Activities": "24.10.7",
+    "UiPath.Mail.Activities": "*",
+    "UiPath.Excel.Activities": "[2.24.2]"
+  },
+  "schemaVersion": "4.0",
+  "studioVersion": "24.10.4.0",
+  "targetFramework": "Legacy",
+  "expressionLanguage": "VisualBasic",
+  "runtimeOptions": {
+    "autoDispose": false,
+    "isPausable": true,
+    "requiresUserInteraction": true,
+    "supportsPersistence": false,
+    "excludedLoggedData": ["Temp:*"]
+  }
+}

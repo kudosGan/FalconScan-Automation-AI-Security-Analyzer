@@ -1,0 +1,17 @@
+.platform-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:var(--gap); }
+.platform-card { border:1px solid var(--line); border-radius:var(--radius); padding:10px 12px; background:#fff; }
+.platform-card.active { border-color:var(--cyan); box-shadow:0 0 0 1px var(--cyan) inset; }
+.platform-card.planned { background:#f6f8fb; color:var(--muted); }
+.platform-card header { display:flex; justify-content:space-between; align-items:center; font-size:11px; }
+.platform-card h4 { margin:6px 0; font-size:14px; color:var(--navy); }
+.platform-card.planned h4 { color:var(--muted); }
+.platform-card ul { margin:0; padding-left:18px; font-size:12px; }
+.pill { border-radius:10px; padding:1px 8px; font-weight:600; }
+.pill.active { background:#d4f0fc; color:#075985; }
+.pill.planned { background:#e6e9ef; color:#5b6477; }
+.pill.limited { background:#fff1c2; color:#7a5200; }
+.platform-card.limited { border-color:#e5c250; }
+.coverage-title { margin:18px 0 4px; }
+.coverage td:first-child { white-space:nowrap; font-weight:600; }
+.coverage td:nth-child(2) { text-align:center; }
+.coverage td:last-child { white-space:normal; max-width:none; }

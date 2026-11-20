@@ -1,0 +1,72 @@
+{
+  "name": "9a8b7c6d-2222-4333-8444-555566667777",
+  "properties": {
+    "displayName": "HR Case Triage (data exposure demo)",
+    "state": "Started",
+    "creator": { "userPrincipalName": "maker@contoso.com" },
+    "createdTime": "2026-09-01T09:30:00Z",
+    "lastModifiedTime": "2026-11-02T14:05:00Z",
+    "definition": {
+      "contentVersion": "1.0.0.0",
+      "triggers": {
+        "When_a_new_email_arrives": {
+          "type": "OpenApiConnectionNotification",
+          "inputs": {
+            "host": { "connectionName": "shared_office365", "operationId": "OnNewEmailV3", "apiId": "/providers/Microsoft.PowerApps/apis/shared_office365" },
+            "parameters": { "folderPath": "Inbox/HR cases" }
+          }
+        }
+      },
+      "actions": {
+        "Get_case_record": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": { "connectionName": "shared_sharepointonline", "operationId": "GetItem", "apiId": "/providers/Microsoft.PowerApps/apis/shared_sharepointonline" },
+            "parameters": { "dataset": "https://contoso.sharepoint.com/sites/HR", "table": "Employee Cases", "id": "@triggerBody()?['subject']" }
+          },
+          "runAfter": {}
+        },
+        "Build_prompt": {
+          "type": "Compose",
+          "inputs": "Summarise this HR case: @{body('Get_case_record')?['Description']} from @{triggerBody()?['from']}",
+          "runAfter": { "Get_case_record": ["Succeeded"] }
+        },
+        "Ask_OpenAI": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": { "connectionName": "shared_openai", "operationId": "CreateChatCompletion", "apiId": "/providers/Microsoft.PowerApps/apis/shared_openai" },
+            "parameters": { "messages": "@outputs('Build_prompt')" }
+          },
+          "runAfter": { "Build_prompt": ["Succeeded"] }
+        },
+        "Post_to_Slack": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": { "connectionName": "shared_slack", "operationId": "PostMessage", "apiId": "/providers/Microsoft.PowerApps/apis/shared_slack" },
+            "parameters": { "channel": "#hr-triage", "text": "@body('Get_case_record')?['Description']" }
+          },
+          "runAfter": { "Ask_OpenAI": ["Succeeded"] }
+        },
+        "Call_summariser_api": {
+          "type": "Http",
+          "inputs": {
+            "method": "POST",
+            "uri": "https://api.openai.com/v1/responses",
+            "authentication": { "type": "Raw", "value": "@parameters('OpenAIKey')" },
+            "body": { "input": "@outputs('Build_prompt')" }
+          },
+          "runAfter": { "Post_to_Slack": ["Succeeded"] },
+          "runtimeConfiguration": { "secureData": { "properties": ["inputs", "outputs"] } }
+        },
+        "Run_AI_Builder_prompt": {
+          "type": "OpenApiConnection",
+          "inputs": {
+            "host": { "connectionName": "shared_commondataserviceforapps", "operationId": "aibuilderpredict_textgeneration", "apiId": "/providers/Microsoft.PowerApps/apis/shared_commondataserviceforapps" },
+            "parameters": { "text": "@body('Get_case_record')?['Description']" }
+          },
+          "runAfter": { "Call_summariser_api": ["Succeeded"] }
+        }
+      }
+    }
+  }
+}

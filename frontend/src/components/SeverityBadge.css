@@ -1,0 +1,4 @@
+.badge { display:inline-block; padding:2px 10px; border-radius:12px; color:#fff; font-size:12px; font-weight:600; background:var(--muted); }
+.badge.high { background:var(--high); }
+.badge.medium { background:var(--medium); }
+.badge.low { background:var(--low); }

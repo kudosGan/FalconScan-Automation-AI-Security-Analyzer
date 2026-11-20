@@ -1,0 +1,8 @@
+.saa { width:520px; max-width:94vw; background:#f3f3f3; border:1px solid #888; box-shadow:0 6px 24px rgba(0,0,0,.4); font-size:12px; }
+.saa-body { background:#fff; padding:10px 14px; display:grid; gap:8px; }
+.saa-body label { display:grid; gap:2px; color:#444; }
+.saa-body input, .saa-body textarea { padding:4px 6px; border:1px solid #888; font:inherit; }
+.saa-note { color:#666; margin:0; }
+.saa-foot { display:flex; justify-content:flex-end; gap:6px; padding:8px 12px; border-top:1px solid #ccc; }
+.saa-foot button { padding:3px 10px; font-size:12px; border:1px solid #888; background:#e6e6e6; cursor:pointer; }
+.saa-foot .primary { background:#cfe2ff; }

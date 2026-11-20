@@ -1,0 +1,52 @@
+# ---- Secrets and local settings: never commit ----
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+.claude/
+CLAUDE.md
+.vscode/settings.json
+
+# ---- Database and data (holds password hashes, findings and audit log) ----
+backend/data/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# ---- Python ----
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# ---- Node and frontend build ----
+node_modules/
+frontend/dist/
+*.tsbuildinfo
+*.log
+npm-debug.log*
+
+# ---- Leftovers from other tools ----
+__azurite_db_*.json
+__blobstorage__/
+__queuestorage__/
+uv.log
+
+# ---- Generated output from scans and reports ----
+*.sarif
+falcon-fixed/
+falconscan-*.pdf
+
+# ---- Operating system and editors ----
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/

@@ -1,0 +1,3 @@
+.source-grid { display:grid; grid-template-columns:2fr 1fr; gap:16px; align-items:start; }
+@media (max-width:900px) { .source-grid { grid-template-columns:1fr; } }
+.source-grid h3 { margin-top:0; }

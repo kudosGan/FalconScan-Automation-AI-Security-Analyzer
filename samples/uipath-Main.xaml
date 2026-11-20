@@ -1,0 +1,28 @@
+<Activity mc:Ignorable="sap sap2010" x:Class="Main" xmlns="http://schemas.microsoft.com/netfx/2009/xaml/activities" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:sap="http://schemas.microsoft.com/netfx/2009/xaml/activities/presentation" xmlns:sap2010="http://schemas.microsoft.com/netfx/2010/xaml/activities/presentation" xmlns:scg="clr-namespace:System.Collections.Generic;assembly=mscorlib" xmlns:ui="http://schemas.uipath.com/workflow/activities" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <x:Members>
+    <x:Property Name="in_Region" Type="InArgument(x:String)" />
+  </x:Members>
+  <Sequence DisplayName="Main sequence" sap2010:WorkflowViewState.IdRef="Sequence_1">
+    <Sequence.Variables>
+      <Variable x:TypeArguments="x:String" Default="Summer2024!" Name="adminPassword" />
+      <Variable x:TypeArguments="x:String" Name="userName" />
+      <Variable x:TypeArguments="x:String" Name="apiToken" />
+    </Sequence.Variables>
+    <ui:HttpClient DisplayName="Call partner API" EndPoint="http://api.partner.example.com/v1/orders" Method="POST" />
+    <ui:HttpClient DisplayName="Call internal API" EndPoint="https://internal.contoso.example/v1/status" Method="GET" />
+    <Assign DisplayName="Set API token">
+      <Assign.To>
+        <OutArgument x:TypeArguments="x:String">[apiToken]</OutArgument>
+      </Assign.To>
+      <Assign.Value>
+        <InArgument x:TypeArguments="x:String">["sk-live-EXAMPLEEXAMPLEEXAMPLE1234"]</InArgument>
+      </Assign.Value>
+    </Assign>
+    <ui:DatabaseConnect DisplayName="Connect to HR database" ProviderName="System.Data.SqlClient" ConnectionString="Server=hr-sql;Database=HR;User Id=robot;Password=Winter2024!;" />
+    <ui:ExecuteQuery DisplayName="Find user" Sql="[&quot;SELECT * FROM Users WHERE Name = '&quot; &amp; userName &amp; &quot;'&quot;]" />
+    <ui:InvokePowerShell DisplayName="Run clean-up script" CommandText="Get-ChildItem C:\Temp | Remove-Item" />
+    <ui:StartProcess DisplayName="Open shell" FileName="cmd.exe" Arguments="/c dir" />
+    <ui:LogMessage DisplayName="Log sign-in" Level="Info" Message="[&quot;Signing in with &quot; &amp; adminPassword]" />
+    <ui:InvokeCode DisplayName="Format value" Code="Dim x = 1" />
+  </Sequence>
+</Activity>

@@ -1,0 +1,38 @@
+{
+  "name": "Support Assistant",
+  "model": "gpt-4o",
+  "provider": "openai",
+  "base_url": "http://llm-gateway.example.com/v1",
+  "instructions": "You are a support assistant. Use the admin key sk-live-EXAMPLEEXAMPLEEXAMPLE1234 when you call the billing API.",
+  "tools": [
+    { "type": "code_interpreter" },
+    { "type": "file_search" },
+    {
+      "type": "function",
+      "function": {
+        "name": "browse_web",
+        "description": "Fetch and read a web page",
+        "parameters": { "type": "object", "properties": { "url": { "type": "string" } }, "required": ["url"] }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "send_email",
+        "description": "Send an email to any recipient",
+        "parameters": { "type": "object", "properties": { "to": { "type": "string" }, "body": { "type": "string" } } }
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "run_sql",
+        "description": "Run a SQL statement on the customer database",
+        "parameters": { "type": "object", "properties": { "sql": { "type": "string" } } }
+      }
+    },
+    { "type": "mcp", "server_label": "crm", "server_url": "https://crm.example.com/mcp", "require_approval": "never" }
+  ],
+  "permissions": ["Files.ReadWrite.All", "*"],
+  "handoffs": [{ "name": "Billing Agent", "url": "http://billing-agent.example.com/a2a" }]
+}
