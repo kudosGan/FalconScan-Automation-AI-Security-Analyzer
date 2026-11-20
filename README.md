@@ -148,3 +148,21 @@ open, where the risk concentrates, progress and recommended next steps.
 - **Add Folder** reads every automation file in the chosen folder and its sub-folders into a new application. Other files are skipped and counted.
 - **Cancel Scan** stops the browser waiting. The server finishes the scan it was already running, and nothing is saved.
 - **Rule Library** (View menu) lists every built-in rule by bundle (category). **Custom rules** are words or phrases that must not appear in a file, matched as plain text and ignoring capitals (not patterns, so they cannot hang the server). Up to 50 rules, 200 characters each. A hit becomes a finding with your title, severity and fix text. The matched text is never repeated in findings or reports. Custom rules are part of the scan configuration, so they apply in the release gate, the CLI (`"custom": [...]` in the policy file) and SARIF output as well.
+
+## Running the website and the API as one program (deployment)
+
+```
+cd frontend && npm install && npm run build
+cd ../backend && pip install -r requirements.txt
+set FALCON_SETUP_TOKEN=choose-a-long-random-value
+set FALCON_COOKIE_SECURE=1
+uvicorn server:app --host 0.0.0.0 --port 8000
+```
+
+`server.py` serves the built website from `frontend/dist` (override with `FALCON_STATIC`) and the API under `/api`, on one address, so no CORS settings or separate web host are needed. The landing page and login page are public. Everything else needs an account.
+
+- Put it behind HTTPS (the host or a reverse proxy normally does this) and keep `FALCON_COOKIE_SECURE=1`, which also turns on the HSTS header.
+- Set `FALCON_SETUP_TOKEN` before the first visit from another computer. The first administrator is created with it.
+- Every response carries a strict Content-Security-Policy and the usual protection headers.
+- Run a single process with a persistent disk for `FALCON_DB` (SQLite), and back that file up.
+- For development keep using `uvicorn main:app` with `npm run dev`.

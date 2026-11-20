@@ -53,6 +53,9 @@ def needed_role(method: str, path: str) -> str:
 
 async def gate_middleware(request: Request, call_next):
     method, path = request.method, request.url.path
+    root = request.scope.get("root_path") or ""        # the API may be mounted under /api by server.py; the rules below use the path inside it
+    if root and path.startswith(root + "/"):
+        path = path[len(root):]
     if not auth_enabled():
         request.state.user, request.state.token = LOCAL_USER, None
         return await call_next(request)

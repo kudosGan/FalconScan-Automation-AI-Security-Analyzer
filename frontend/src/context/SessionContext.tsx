@@ -24,7 +24,7 @@ export const useSession = () => {
 };
 
 /** Who is signed in, and what they may do. With sign-in switched off on the server everyone is the local administrator. */
-export function SessionProvider({ children }: { children: ReactNode }) {
+export function SessionProvider({ children, staticSite = false }: { children: ReactNode; staticSite?: boolean }) {
   const [ready, setReady] = useState(false);
   const [authEnabled, setAuthEnabled] = useState(true);
   const [setupRequired, setSetupRequired] = useState(false);
@@ -39,7 +39,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setReady(true);
   }, []);
 
-  useEffect(() => { refresh(); }, [refresh]);
+  // The public website has no server behind it: nobody is signed in and there is nothing to ask.
+  useEffect(() => { if (staticSite) setReady(true); else refresh(); }, [refresh, staticSite]);
   // Any request the server refuses with "sign in required" ends the session here.
   useEffect(() => {
     const onOut = () => setUser((u) => { if (u) setNotice("Your session ended. Please sign in again."); return null; });
