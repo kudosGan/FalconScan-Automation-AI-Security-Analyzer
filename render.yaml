@@ -1,0 +1,20 @@
+# Render blueprint: one web service that runs the website and the API from the Dockerfile.
+# New > Blueprint on render.com, pick this repository, and fill in the setup token when asked.
+services:
+  - type: web
+    name: falcon-scan
+    runtime: docker
+    plan: free              # the free plan has no disk and sleeps when idle; use a paid plan with a disk (below) to keep data
+    healthCheckPath: /api/account/state
+    envVars:
+      - key: FALCON_SETUP_TOKEN
+        generateValue: true   # shown in the Render dashboard; you type it on the first-admin screen
+      - key: FALCON_COOKIE_SECURE
+        value: "1"
+      - key: FALCON_SCHEDULER
+        value: "off"          # scheduled scans need an always-on service
+    # For data that survives restarts, use a paid plan and uncomment:
+    # disk:
+    #   name: falcon-data
+    #   mountPath: /data
+    #   sizeGB: 1

@@ -1,6 +1,7 @@
 import "./SiteHeader.css";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import AppLink from "./AppLink";
 import Logo from "./Logo";
 import PencilIcon, { type IconName } from "./PencilIcon";
 import { BRAND } from "../brand";
@@ -98,7 +99,7 @@ export default function SiteHeader() {
           </div>
         ))}
       </nav>
-      <Link className="btn login-btn" to={action.to}>{action.text}</Link>
+      <AppLink className="btn login-btn" to={action.to}>{action.text}</AppLink>
     </header>
   );
 }

@@ -1,5 +1,5 @@
 import "./Landing.css";
-import { Link } from "react-router-dom";
+import AppLink from "../components/AppLink";
 import Logo from "../components/Logo";
 import SiteHeader from "../components/SiteHeader";
 import { BRAND } from "../brand";
@@ -39,7 +39,7 @@ export default function Landing() {
         <p className="tagline">{BRAND.tagline}</p>
         <p className="statement">{BRAND.statement}</p>
         <p>Find risky triggers and tools, hard-coded secrets, insecure calls and governance gaps in your automations and AI agents, and fix them before they reach production.</p>
-        <Link className="btn big" to={cta.to}>{cta.text}</Link>{" "}
+        <AppLink className="btn big" to={cta.to}>{cta.text}</AppLink>{" "}
         <a className="btn big ghost" href="#platforms">See what it scans</a>
       </section>
 
@@ -88,7 +88,7 @@ export default function Landing() {
           <li>Sign in</li><li>Upload files or a solution .zip</li><li>Review findings and fixes</li><li>Report or gate the release</li>
         </ol>
         <p className="muted">Scanning is static. Falcon Scan reads exported definitions, so it never runs your automations or touches live data.</p>
-        <Link className="btn big" to={cta.to}>{cta.text}</Link>
+        <AppLink className="btn big" to={cta.to}>{cta.text}</AppLink>
       </section>
       <footer className="site-foot">{BRAND.name}&trade; is a proprietary software application developed and owned by MurphyGAN. &copy; {new Date().getFullYear()} MurphyGAN. All rights reserved.</footer>
     </div>

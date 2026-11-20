@@ -123,8 +123,11 @@ def account_state(request: Request):
 def account_setup(body: Setup, request: Request, response: Response):
     ip = client_ip(request)
     token = os.environ.get("FALCON_SETUP_TOKEN") or ""
-    if not (ip in ("127.0.0.1", "::1", "localhost") or (token and hmac.compare_digest(token, body.setupToken))):
-        raise HTTPException(403, "The first administrator can only be created on the server itself, or with the setup token (FALCON_SETUP_TOKEN).")
+    # With a token configured it is always required: behind a proxy the visitor's address comes from a header that can be faked,
+    # so "is this the server itself" cannot be trusted there. Without a token only the server itself may set up.
+    allowed = hmac.compare_digest(token, body.setupToken) if token else ip in ("127.0.0.1", "::1", "localhost")
+    if not allowed:
+        raise HTTPException(403, "The first administrator can only be created with the setup token (FALCON_SETUP_TOKEN), or on the server itself when no token is set.")
     try:
         user = accounts.create_user(body.username, body.password, "admin", body.displayName, only_if_empty=True)
     except ValueError as e:

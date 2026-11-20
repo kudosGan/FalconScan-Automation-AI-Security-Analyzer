@@ -191,3 +191,23 @@ def test_with_sign_in_switched_off_everything_works_as_before(monkeypatch):
     assert c.get("/account/state").json()["authEnabled"] is False
     assert c.post("/scan/upload", json={"files": [{"filename": "r.json", "content": RISKY}]}).status_code == 200
     assert c.get("/admin/users").status_code == 200
+
+
+def test_a_configured_setup_token_is_required_even_when_the_request_claims_to_come_from_the_server(secure, monkeypatch):
+    import enterprise
+    monkeypatch.setattr(enterprise, "client_ip", lambda request: "127.0.0.1")     # as if a proxy header said so
+    c = new_client()
+    body = {"username": "root", "password": PW, "displayName": "Root"}
+    assert c.post("/account/setup", json={**body, "setupToken": ""}).status_code == 403
+    assert c.post("/account/setup", json={**body, "setupToken": "setup-secret-token"}).status_code == 200
+
+
+def test_without_a_setup_token_only_the_server_itself_may_create_the_first_administrator(monkeypatch):
+    import enterprise
+    monkeypatch.setenv("FALCON_AUTH", "on")
+    monkeypatch.delenv("FALCON_SETUP_TOKEN", raising=False)
+    body = {"username": "root", "password": PW, "displayName": "Root", "setupToken": ""}
+    monkeypatch.setattr(enterprise, "client_ip", lambda request: "203.0.113.9")
+    assert new_client().post("/account/setup", json=body).status_code == 403
+    monkeypatch.setattr(enterprise, "client_ip", lambda request: "127.0.0.1")
+    assert new_client().post("/account/setup", json=body).status_code == 200

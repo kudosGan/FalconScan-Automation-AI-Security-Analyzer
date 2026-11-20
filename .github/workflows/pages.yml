@@ -31,6 +31,8 @@ jobs:
         working-directory: frontend
         env:
           VITE_BASE: /${{ github.event.repository.name }}/
+          # Address of the live application, set under Settings > Secrets and variables > Actions > Variables (name: APP_URL).
+          VITE_APP_URL: ${{ vars.APP_URL }}
         run: |
           npm ci
           npm run build:site

@@ -172,3 +172,15 @@ uvicorn server:app --host 0.0.0.0 --port 8000
 `npm run build:site` in `frontend/` builds a public website into `frontend/dist-site/` from `site.html`. It holds the landing page and a notice where login would be. None of the application (workbench, scanner screens, API code) is included. Set `VITE_BASE` to the path it is served from, for example `VITE_BASE=/my-repo/ npm run build:site`.
 
 `.github/workflows/pages.yml` builds and publishes it to GitHub Pages on every push to `main` that touches `frontend/`. Turn it on once under Settings, then Pages, then Source: **GitHub Actions**. The repository itself can stay private: only the built site is published. GitHub Pages from a private repository needs a plan that supports it (for example Pro or Team), so check Settings, Pages before relying on it.
+
+## Putting the live application online (Render)
+
+GitHub Pages only hosts the landing page. To run the real application (sign-in, scanner, workbench) online you need a host that runs Python. The repository contains a `Dockerfile` and a `render.yaml` for [Render](https://render.com):
+
+1. On render.com choose **New ▸ Blueprint**, connect this GitHub repository and apply `render.yaml`. It builds the website and starts one service.
+2. In the service's **Environment** tab copy the generated value of `FALCON_SETUP_TOKEN`.
+3. Open the service address, choose **Login**, and on "Create the first administrator" enter your username and password and the setup token. The token is always required once it is set.
+4. Add other people under Administration ▸ Users. Give a read-only (viewer) account to anyone who only needs to look.
+5. Make the landing page link to it: in the GitHub repository open Settings ▸ Secrets and variables ▸ Actions ▸ **Variables**, add `APP_URL` with the service address (for example `https://falcon-scan.onrender.com`), then re-run "Publish public website". The Login buttons on the public site then open the live application.
+
+Things to know about the free Render plan: the service sleeps when idle (the first visit after a pause takes about a minute), and there is no disk, so the database is wiped whenever it restarts. For data that persists, use a paid plan and uncomment the `disk` section in `render.yaml`. Scheduled scans are off, and PDF reports fall back to the browser's print dialog, because the container has no Chrome or Edge.
