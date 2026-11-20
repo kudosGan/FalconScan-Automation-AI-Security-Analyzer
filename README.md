@@ -166,3 +166,9 @@ uvicorn server:app --host 0.0.0.0 --port 8000
 - Every response carries a strict Content-Security-Policy and the usual protection headers.
 - Run a single process with a persistent disk for `FALCON_DB` (SQLite), and back that file up.
 - For development keep using `uvicorn main:app` with `npm run dev`.
+
+## Public website (landing page only)
+
+`npm run build:site` in `frontend/` builds a public website into `frontend/dist-site/` from `site.html`. It holds the landing page and a notice where login would be. None of the application (workbench, scanner screens, API code) is included. Set `VITE_BASE` to the path it is served from, for example `VITE_BASE=/my-repo/ npm run build:site`.
+
+`.github/workflows/pages.yml` builds and publishes it to GitHub Pages on every push to `main` that touches `frontend/`. Turn it on once under Settings, then Pages, then Source: **GitHub Actions**. The repository itself can stay private: only the built site is published. GitHub Pages from a private repository needs a plan that supports it (for example Pro or Team), so check Settings, Pages before relying on it.
