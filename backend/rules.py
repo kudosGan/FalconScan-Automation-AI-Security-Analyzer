@@ -16,6 +16,34 @@ OWASP_LLM03 = "LLM03:2025 Supply Chain"
 OWASP_LLM05 = "LLM05:2025 Improper Output Handling"
 OWASP_LLM06 = "LLM06:2025 Excessive Agency"
 
+# OWASP Low-Code/No-Code Top 10. The same ten risks the platform security strategy lists; every rule below maps to exactly one.
+LCNC = {
+    "LCNC-SEC-01": "Account Impersonation",
+    "LCNC-SEC-02": "Authorization Misuse",
+    "LCNC-SEC-03": "Data Leakage and Unexpected Consequences",
+    "LCNC-SEC-04": "Authentication and Secure Communication Failures",
+    "LCNC-SEC-05": "Security Misconfiguration",
+    "LCNC-SEC-06": "Injection Handling Failures",
+    "LCNC-SEC-07": "Vulnerable and Untrusted Components",
+    "LCNC-SEC-08": "Data and Secret Handling Failures",
+    "LCNC-SEC-09": "Asset Management Failures",
+    "LCNC-SEC-10": "Security Logging and Monitoring Failures",
+}
+_L = {
+    "PA-TRG-001": "02", "PA-TRG-002": "09", "PA-TRG-003": "04", "PA-ACT-001": "04", "PA-ACT-002": "03", "PA-ACT-003": "04",
+    "PA-ACT-004": "03", "PA-SEC-001": "08", "PA-CFG-001": "08", "PA-CFG-002": "10", "PA-GOV-001": "09", "PA-GOV-002": "02",
+    "PA-GOV-003": "09", "PA-CON-001": "03", "PA-CON-002": "07", "PA-CON-003": "07", "PA-AI-001": "03", "PA-DLP-001": "05",
+    "PA-DLP-002": "03",
+    "AG-SEC-001": "08", "AG-MCP-001": "04", "AG-MCP-002": "04", "AG-MCP-003": "07", "AG-MCP-004": "06", "AG-MCP-005": "02",
+    "AG-MCP-006": "05", "AG-MCP-007": "04", "AG-MCP-008": "02", "AG-AGT-001": "02", "AG-AGT-002": "02", "AG-AGT-003": "06",
+    "AG-AGT-004": "06", "AG-AGT-005": "03", "AG-AGT-006": "02", "AG-LLM-001": "03", "AG-LLM-002": "04", "AG-A2A-001": "02",
+    "RPA-SEC-001": "08", "RPA-NET-001": "04", "RPA-CODE-001": "06", "RPA-CODE-002": "06", "UIP-DB-001": "06", "UIP-LOG-001": "08",
+    "UIP-PRJ-001": "07", "UIP-PRJ-002": "08", "UIP-PRJ-003": "07",
+    "WF-TRG-001": "04", "WF-TRG-002": "04", "WF-SEC-001": "08", "WF-NET-001": "04", "WF-NET-002": "04", "WF-CODE-001": "06",
+    "WF-CODE-002": "06", "WF-INJ-001": "06", "WF-AI-001": "03", "WF-CFG-001": "10", "WF-CFG-002": "03", "WF-CFG-003": "10",
+    "WF-GOV-001": "09",
+}
+
 
 def _r(rule_id, title, severity, category, cwe=None, owasp=None, description=""):
     return {"id": rule_id, "title": title, "severity": severity, "category": category,
@@ -115,10 +143,41 @@ RULES: list[dict] = [
        "Package versions can change between builds without review."),
     _r("UIP-PRJ-002", "Sensitive values not excluded from logs", "Low", "Configuration", "CWE-532", OWASP_A09,
        "The project does not list password or private data keywords in its excluded-from-logging setting."),
+    # ---- Workflow automation exports (workflowscan.py): n8n workflows and Make scenario blueprints ----
+    _r("WF-TRG-001", "Webhook trigger open to anyone", "High", "Trigger exposure", "CWE-306", OWASP_A07,
+       "A webhook with no authentication starts the workflow for anyone who learns its address."),
+    _r("WF-TRG-002", "Webhook trigger: caller not restricted in the export", "Medium", "Trigger exposure", "CWE-306", OWASP_A07,
+       "The scenario starts from a public address and the export shows no IP restriction or secret check."),
+    _r("WF-SEC-001", "Hard-coded secret in a workflow", "High", "Secret handling", "CWE-798", OWASP_A07,
+       "A key, password or token is typed into a node, module, header or code step."),
+    _r("WF-NET-001", "Unencrypted HTTP address", "High", "Action configuration", "CWE-319", OWASP_A02,
+       "The workflow talks to a non-local address over plain http://."),
+    _r("WF-NET-002", "TLS certificate checking disabled", "High", "Action configuration", "CWE-295", OWASP_A02,
+       "The step accepts any certificate, so the connection can be intercepted."),
+    _r("WF-CODE-001", "Shell or system command started", "Medium", "Action configuration", "CWE-78", OWASP_A03,
+       "A step runs an operating-system command or a shell."),
+    _r("WF-CODE-002", "Embedded code or script step", "Low", "Governance", "CWE-94", OWASP_A03,
+       "Custom code runs inside the workflow and needs its own review."),
+    _r("WF-INJ-001", "SQL built from workflow data", "Medium", "Action configuration", "CWE-89", OWASP_A03,
+       "Values from earlier steps are placed directly in a SQL statement."),
+    _r("WF-AI-001", "Data sent to an AI service", "Medium", "Data exposure", "CWE-200", OWASP_LLM02,
+       "Workflow content is sent to an AI model provider."),
+    _r("WF-CFG-001", "Errors ignored", "Low", "Configuration", "CWE-703", OWASP_A09,
+       "A step continues after a failure, so problems can pass unnoticed."),
+    _r("WF-CFG-002", "Test data pinned in the workflow", "Medium", "Data exposure", "CWE-200", OWASP_A04,
+       "Pinned sample data is saved inside the export and may hold real records."),
+    _r("WF-CFG-003", "No error workflow", "Low", "Configuration", "CWE-391", OWASP_A09,
+       "Failed runs may not alert anyone."),
+    _r("WF-GOV-001", "Workflow is not active", "Low", "Governance", None, None,
+       "A switched-off workflow should be reviewed or removed."),
     _r("UIP-PRJ-003", "Project uses the legacy framework", "Low", "Governance", "CWE-1104", OWASP_A06,
        "Legacy projects run on an older runtime that gets fewer updates."),
 ]
 
+
+for _rule in RULES:
+    _rule["lcnc"] = f"LCNC-SEC-{_L[_rule['id']]}"          # a KeyError here means a new rule was added without choosing its category
+    _rule["lcncTitle"] = LCNC[_rule["lcnc"]]
 
 BY_ID = {r["id"]: r for r in RULES}
 SEVERITIES = ("High", "Medium", "Low")
@@ -126,7 +185,7 @@ SEVERITIES = ("High", "Medium", "Low")
 
 def meta(rule_id: str) -> dict:
     r = BY_ID.get(rule_id, {})
-    return {"cwe": r.get("cwe"), "owasp": r.get("owasp"), "category": r.get("category", "General")}
+    return {"cwe": r.get("cwe"), "owasp": r.get("owasp"), "lcnc": r.get("lcnc"), "category": r.get("category", "General")}
 
 
 def clean_policy(policy: dict | None) -> tuple[set, dict]:

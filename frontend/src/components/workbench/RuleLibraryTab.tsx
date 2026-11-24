@@ -22,7 +22,7 @@ export default function RuleLibraryTab({ rules, policy, canEdit, category, onCat
   const categories = useMemo(() => [...new Set(rules.map((r) => r.category))].sort(), [rules]);
   const shown = useMemo(() => rules.filter((r) =>
     (!category || r.category === category) &&
-    (!q || `${r.id} ${r.title} ${r.category} ${r.cwe ?? ""} ${r.owasp ?? ""} ${r.description}`.toLowerCase().includes(q.toLowerCase()))), [rules, category, q]);
+    (!q || `${r.id} ${r.title} ${r.category} ${r.cwe ?? ""} ${r.owasp ?? ""} ${r.lcnc ?? ""} ${r.lcncTitle ?? ""} ${r.description}`.toLowerCase().includes(q.toLowerCase()))), [rules, category, q]);
 
   const edit = (i: number, patch: Partial<CustomRule>) => setDraft((d) => d.map((r, j) => (j === i ? { ...r, ...patch } : r)));
   const add = () => setDraft((d) => [...d, { id: "", title: "", severity: "Medium", text: "", fix: "", enabled: true }]);
@@ -76,13 +76,13 @@ export default function RuleLibraryTab({ rules, policy, canEdit, category, onCat
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search rule, CWE, OWASP…" />
         </div>
         <table className="rules-table">
-          <thead><tr><th>Rule</th><th>Bundle</th><th>Severity</th><th>CWE</th><th>OWASP</th><th>In this scan configuration</th></tr></thead>
+          <thead><tr><th>Rule</th><th>Bundle</th><th>Severity</th><th>CWE</th><th>OWASP</th><th>Low-code Top 10</th><th>In this scan configuration</th></tr></thead>
           <tbody>
             {shown.map((r) => (
               <tr key={r.id} title={r.description} className={off.has(r.id) ? "off" : ""}>
                 <td><b>{r.id}</b> {r.title}</td><td>{r.category}</td>
                 <td>{policy.severity[r.id] ?? r.severity}{policy.severity[r.id] ? " (changed)" : ""}</td>
-                <td>{r.cwe ?? "—"}</td><td>{r.owasp ?? "—"}</td><td>{off.has(r.id) ? "Off" : "On"}</td>
+                <td>{r.cwe ?? "—"}</td><td>{r.owasp ?? "—"}</td><td title={r.lcncTitle}>{r.lcnc ?? "—"}</td><td>{off.has(r.id) ? "Off" : "On"}</td>
               </tr>
             ))}
           </tbody>

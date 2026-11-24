@@ -1,7 +1,7 @@
 """HTTP layer for sign-in, roles, shared data, the audit log, schedules and tickets.
 
 Install with enterprise.install(app). Sign-in is on unless FALCON_AUTH=off. When it is on:
-  * every request except /account/state, /account/login and /account/setup needs a valid session cookie;
+  * every request except /account/state, /account/login, /account/setup and the GitHub sign-in redirects needs a valid session cookie;
   * every request that changes something must also send the header X-Falcon-CSRF: 1 (the cookie is SameSite=Strict as well);
   * each route needs a minimum role (see needed_role) and a refused request is written to the audit log.
 """
@@ -17,6 +17,7 @@ from starlette.concurrency import run_in_threadpool
 import accounts
 import audit
 import db
+import githublogin
 import scheduler
 import store
 import tickets
@@ -26,7 +27,8 @@ CSRF_HEADER = "x-falcon-csrf"
 SAFE = {"GET", "HEAD", "OPTIONS"}
 LOCAL_USER = {"id": 0, "username": "local", "displayName": "Local user", "role": "admin", "active": True,
               "createdAt": None, "lastLogin": None, "locked": False}
-PUBLIC = {("GET", "/account/state"), ("POST", "/account/login"), ("POST", "/account/setup")}
+PUBLIC = {("GET", "/account/state"), ("POST", "/account/login"), ("POST", "/account/setup"),
+          ("GET", "/account/github/start"), ("GET", "/account/github/callback")}
 AUDITED = {("POST", "/scan/upload"): "scan.run", ("POST", "/scan"): "scan.run.live", ("POST", "/gate"): "gate.run",
            ("POST", "/fix"): "fix.generate", ("POST", "/report/pdf"): "report.pdf", ("POST", "/solution/extract"): "solution.import"}
 
@@ -115,8 +117,10 @@ class PasswordChange(BaseModel):
 @account.get("/account/state")
 def account_state(request: Request):
     if not auth_enabled():
-        return {"authEnabled": False, "setupRequired": False, "user": LOCAL_USER}
-    return {"authEnabled": True, "setupRequired": accounts.count_users() == 0, "user": request.state.user}
+        return {"authEnabled": False, "setupRequired": False, "github": False, "user": LOCAL_USER}
+    gh = githublogin.configured()
+    # With GitHub sign-in configured the allow-list decides who gets in, so the first-administrator form is not offered.
+    return {"authEnabled": True, "setupRequired": accounts.count_users() == 0 and not gh, "github": gh, "user": request.state.user}
 
 
 @account.post("/account/setup")
@@ -418,7 +422,7 @@ def tickets_create(request: Request, body: dict = Body(...)):
 
 def install(app) -> None:
     app.middleware("http")(gate_middleware)
-    for r in (account, admin, data, sched, tix):
+    for r in (account, githublogin.router, admin, data, sched, tix):
         app.include_router(r)
     inner = app.router.lifespan_context
 

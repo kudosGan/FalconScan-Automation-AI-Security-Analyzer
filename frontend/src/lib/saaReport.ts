@@ -1,13 +1,24 @@
 import { logoSrc } from "./logoData";
-import type { IssueState, ScanRecord } from "../types";
+import type { IssueState, Rule, ScanRecord } from "../types";
 import type { FindingRow } from "./findingRows";
 import type { Diff } from "./compare";
 
 /** Security Assessment and Authorization (SA&A) report and POA&M built from one assessment and its triage state. */
-export type SaaMeta = { system: string; organization: string; assessor: string; authorizingOfficial: string; purpose: string };
+export type SaaMeta = { system: string; organization: string; assessor: string; authorizingOfficial: string; purpose: string;
+  /** "summary": an attestation with counts and the POA&M but no finding detail. "full": the whole report, to keep as evidence. */
+  detail?: "summary" | "full";
+  /** List only High findings in the detail, accepted-risk and POA&M sections; the counts still cover everything. */
+  highOnly?: boolean };
 type IssueOf = (row: FindingRow) => IssueState;
 
 const esc = (s: unknown) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]!));
+const LCNC_TITLES: Record<string, string> = {
+  "LCNC-SEC-01": "Account Impersonation", "LCNC-SEC-02": "Authorization Misuse", "LCNC-SEC-03": "Data Leakage and Unexpected Consequences",
+  "LCNC-SEC-04": "Authentication and Secure Communication Failures", "LCNC-SEC-05": "Security Misconfiguration",
+  "LCNC-SEC-06": "Injection Handling Failures", "LCNC-SEC-07": "Vulnerable and Untrusted Components",
+  "LCNC-SEC-08": "Data and Secret Handling Failures", "LCNC-SEC-09": "Asset Management Failures",
+  "LCNC-SEC-10": "Security Logging and Monitoring Failures",
+};
 const SEV = ["High", "Medium", "Low"] as const;
 const rank = (s: string) => SEV.indexOf(s as (typeof SEV)[number]);
 const isOpen = (s: string) => s === "Open" || s === "In progress";
@@ -20,24 +31,31 @@ function ordered(rows: FindingRow[]) {
 }
 
 export function toPoamCsv(record: ScanRecord, rows: FindingRow[], issueOf: IssueOf): string {
-  const head = ["POA&M ID", "Weakness", "Weakness description", "Rule", "CWE", "OWASP", "Severity", "Flow", "Location", "Status",
+  const head = ["POA&M ID", "Weakness", "Weakness description", "Rule", "CWE", "OWASP", "OWASP LCNC", "Severity", "Flow", "Location", "Status",
     "Recommended remediation", "Responsible party", "Resources required", "Scheduled completion date", "Milestones", "Comments", "Date detected", "Assessment ID"];
   const q = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = ordered(rows).filter(({ r }) => isOpen(issueOf(r).status)).map(({ r, id }) =>
-    [id.replace("F-", "POAM-"), r.type, r.detail, r.ruleId, r.cwe, r.owasp, r.severity, r.sink, r.source, issueOf(r).status,
+    [id.replace("F-", "POAM-"), r.type, r.detail, r.ruleId, r.cwe, r.owasp, r.lcnc, r.severity, r.sink, r.source, issueOf(r).status,
       r.fix.map((t, n) => `${n + 1}. ${t}`).join(" "), "", "", "", "", issueOf(r).comment, record.createdAt.slice(0, 10), record.id].map(q).join(","));
   return "﻿" + [head.map(q).join(","), ...lines].join("\r\n");   // BOM so Excel reads UTF-8
 }
 
-export function toSaaHtml(record: ScanRecord, rows: FindingRow[], issueOf: IssueOf, diff: Diff | null, meta: SaaMeta): string {
-  const items = ordered(rows);
+export function toSaaHtml(record: ScanRecord, rows: FindingRow[], issueOf: IssueOf, diff: Diff | null, meta: SaaMeta, rules: Rule[] = []): string {
+  const lcncOf = new Map(rules.map((r) => [r.id, r]));
+  rows = rows.map((r) => ({ ...r, lcnc: r.lcnc || lcncOf.get(r.ruleId)?.lcnc || "" }));
+  const everything = ordered(rows);                                  // numbering and counts always cover every finding
+  const attestation = meta.detail === "summary";
+  const highOnly = !!meta.highOnly;
+  const items = highOnly ? everything.filter(({ r }) => r.severity === "High") : everything;
+  const hiddenCount = everything.length - items.length;
   const results = record.response.results;
   const st = (r: FindingRow) => issueOf(r).status;
+  const openAll = everything.filter(({ r }) => isOpen(st(r)));
   const openRows = items.filter(({ r }) => isOpen(st(r)));
   const accepted = items.filter(({ r }) => st(r) === "Accepted risk");
-  const fixed = items.filter(({ r }) => st(r) === "Fixed").length;
-  const noise = items.filter(({ r }) => st(r) === "Noise").length;
-  const openBy = (s: string) => openRows.filter(({ r }) => r.severity === s).length;
+  const fixed = everything.filter(({ r }) => st(r) === "Fixed").length;
+  const noise = everything.filter(({ r }) => st(r) === "Noise").length;
+  const openBy = (s: string) => openAll.filter(({ r }) => r.severity === s).length;
   const total = (s: string) => rows.filter((r) => r.severity === s).length;
   const system = meta.system.trim() || record.appName || "Not stated";
   const off = record.disabled ?? [];
@@ -67,7 +85,7 @@ export function toSaaHtml(record: ScanRecord, rows: FindingRow[], issueOf: Issue
   const detail = items.map(({ r, id }) => {
     const i = issueOf(r);
     return `<tr><td>${id}</td><td class="${r.severity}">${r.severity}</td><td>${esc(i.status)}</td>
-<td><b>${esc(r.type)}</b>${r.isNew ? " <b>(new)</b>" : ""}<br><small>${esc(r.ruleId)} · ${esc(r.cwe)} · ${esc(r.owasp)}</small></td>
+<td><b>${esc(r.type)}</b>${r.isNew ? " <b>(new)</b>" : ""}<br><small>${esc(r.ruleId)} · ${esc(r.cwe)} · ${esc(r.owasp)}${r.lcnc ? " · " + esc(r.lcnc) : ""}</small></td>
 <td>${esc(r.sink)}<br><small>${esc(r.source)}</small></td>
 <td>${esc(r.detail)}${r.fix.length ? `<br><b>Recommended remediation:</b><ol>${r.fix.map((t) => `<li>${esc(t)}</li>`).join("")}</ol>` : ""}${i.comment ? `<br><i>Assessor/owner comment: ${esc(i.comment)}${i.updatedAt ? ` (${esc(day(i.updatedAt))})` : ""}</i>` : ""}</td></tr>`;
   }).join("");
@@ -78,6 +96,18 @@ export function toSaaHtml(record: ScanRecord, rows: FindingRow[], issueOf: Issue
   }).join("");
 
   const poam = openRows.map(({ r, id }) => `<tr><td>${id.replace("F-", "POAM-")}</td><td class="${r.severity}">${r.severity}</td><td>${esc(r.type)}<br><small>${esc(r.sink)} · ${esc(r.source)}</small></td><td>${esc(r.fix[0] ?? "See finding " + id)}</td><td></td><td></td><td>${esc(st(r))}</td></tr>`).join("");
+
+  const scopeNote = highOnly && hiddenCount ? ` Sections 5 to 7 list High findings only; ${hiddenCount} Medium and Low finding(s) are counted above but not listed. Run the report with "all findings" to see them.` : "";
+
+  // OWASP Low-Code/No-Code Top 10: which categories Falcon Scan has checks for, and what it found in each.
+  const lcncNames = new Map<string, string>();
+  const checks = new Map<string, number>();
+  for (const r of rules) if (r.lcnc) { lcncNames.set(r.lcnc, r.lcncTitle ?? r.lcnc); checks.set(r.lcnc, (checks.get(r.lcnc) ?? 0) + 1); }
+  const lcncRows = [...lcncNames.keys()].sort().length ? Array.from({ length: 10 }, (_, i) => `LCNC-SEC-${String(i + 1).padStart(2, "0")}`).map((code) => {
+    const mine = rows.filter((r) => r.lcnc === code);
+    const n = checks.get(code) ?? 0;
+    return `<tr><td>${code}</td><td>${esc(lcncNames.get(code) ?? LCNC_TITLES[code])}</td><td>${n ? n : "<b>None yet</b>"}</td><td>${mine.length}</td><td class="High">${mine.filter((r) => r.severity === "High" && isOpen(st(r))).length || ""}</td></tr>`;
+  }).join("") : "";
 
   return `<!doctype html><html><head><meta charset="utf-8"><title>Security Assessment Report: ${esc(system)}</title><style>
 body{font:13px/1.5 Segoe UI,Arial,sans-serif;color:#1b2333;margin:28px;max-width:1100px}
@@ -92,12 +122,13 @@ td.High,.High{color:#b42318;font-weight:700}td.Medium,.Medium{color:#b54708;font
 <table><tr><th>System / application</th><td>${esc(system)}</td><th>Report ID</th><td>${esc(record.id)}</td></tr>
 <tr><th>Organization</th><td>${esc(meta.organization || "Not stated")}</td><th>Assessment date</th><td>${esc(day(record.createdAt))}</td></tr>
 <tr><th>Assessor</th><td>${esc(meta.assessor || "Not stated")}</td><th>Report generated</th><td>${esc(day(new Date().toISOString()))}</td></tr>
+<tr><th>Report type</th><td>${attestation ? "Summary attestation" : "Full report"}</td><th>Findings listed</th><td>${highOnly ? "High only" : "All"}</td></tr>
 <tr><th>Authorizing official</th><td>${esc(meta.authorizingOfficial || "Not stated")}</td><th>Scan configuration</th><td>${esc(record.config ?? "Normal scan")}</td></tr></table>
 ${meta.purpose.trim() ? `<h3>Purpose</h3><p>${esc(meta.purpose)}</p>` : ""}
 
 <h2>1. Executive summary</h2>
 <div class="banner ${indicator.cls}">${esc(indicator.text)}</div>
-<div class="kpi"><div><b>${results.length}</b>Flows assessed</div><div><b>${rows.length}</b>Findings</div><div><b>${openRows.length}</b>Open</div><div class="High"><b>${openBy("High")}</b>Open High</div><div class="Medium"><b>${openBy("Medium")}</b>Open Medium</div><div class="Low"><b>${openBy("Low")}</b>Open Low</div><div><b>${accepted.length}</b>Accepted risk</div><div><b>${fixed}</b>Fixed</div><div><b>${noise}</b>Noise</div></div>
+<div class="kpi"><div><b>${results.length}</b>Flows assessed</div><div><b>${rows.length}</b>Findings</div><div><b>${openAll.length}</b>Open</div><div class="High"><b>${openBy("High")}</b>Open High</div><div class="Medium"><b>${openBy("Medium")}</b>Open Medium</div><div class="Low"><b>${openBy("Low")}</b>Open Low</div><div><b>${everything.filter(({ r }) => st(r) === "Accepted risk").length}</b>Accepted risk</div><div><b>${fixed}</b>Fixed</div><div><b>${noise}</b>Noise</div></div>
 <p>This indicator comes from an automated static analysis of exported automation definitions. It supports, and does not replace, the judgement of the assessor and the authorizing official.</p>
 ${diff ? `<p>Compared with the previous assessment of this application: <b>${diff.added}</b> new finding(s), <b>${diff.fixed.length}</b> fixed, <b>${diff.unchanged}</b> unchanged.</p>` : ""}
 
@@ -113,24 +144,30 @@ ${diff ? `<p>Compared with the previous assessment of this application: <b>${dif
 <h3>By category</h3>
 <table><tr><th>Category</th><th>High</th><th>Medium</th><th>Low</th><th>Total</th></tr>${catRows || '<tr><td colspan="5">No findings.</td></tr>'}</table>
 
+${lcncRows ? `<h3>OWASP Low-Code/No-Code Top 10</h3>
+<table><tr><th>Category</th><th>Risk</th><th>Checks in Falcon Scan</th><th>Findings</th><th>Open High</th></tr>${lcncRows}</table>
+<p class="note">"None yet" means Falcon Scan has no check for that risk, so an empty row is not evidence that the risk is absent.</p>` : ""}
+
 <h2>4. Data exposure</h2>
-${exposure ? `<h3>Third-party and AI services used</h3><table><tr><th>Flow</th><th>Connector</th><th>Publisher</th><th>Type</th><th>Data sensitivity</th></tr>${exposure}</table>` : "<p>No third-party or AI connectors were identified.</p>"}
-${flows ? `<h3>Traced data flows to third-party or AI services</h3><table><tr><th>Flow</th><th>From</th><th>To</th><th>Sensitivity</th><th>Destination</th></tr>${flows}</table>` : ""}
+${attestation ? "<p>Not included in a summary attestation. Produce the full report for the detail.</p>" : ""}
+${attestation ? "" : exposure ? `<h3>Third-party and AI services used</h3><table><tr><th>Flow</th><th>Connector</th><th>Publisher</th><th>Type</th><th>Data sensitivity</th></tr>${exposure}</table>` : "<p>No third-party or AI connectors were identified.</p>"}
+${!attestation && flows ? `<h3>Traced data flows to third-party or AI services</h3><table><tr><th>Flow</th><th>From</th><th>To</th><th>Sensitivity</th><th>Destination</th></tr>${flows}</table>` : ""}
 
 <h2 class="pb">5. Detailed findings</h2>
-${detail ? `<table><tr><th>ID</th><th>Severity</th><th>Status</th><th>Weakness</th><th>Where</th><th>Description and remediation</th></tr>${detail}</table>` : "<p>No findings were raised.</p>"}
+${attestation ? "<p>Not included in a summary attestation. The findings are counted in section 3 and carried into the POA&amp;M.</p>" : detail ? `<table><tr><th>ID</th><th>Severity</th><th>Status</th><th>Weakness</th><th>Where</th><th>Description and remediation</th></tr>${detail}</table>` : "<p>No findings were raised.</p>"}
 
 <h2>6. Residual risk and accepted risks</h2>
-<p>${openRows.length} finding(s) remain open and are carried into the POA&amp;M. ${accepted.length} finding(s) are marked as accepted risk${accepted.length ? "; each should have a written justification and an approver" : ""}.</p>
+<p>${openAll.length} finding(s) remain open. ${everything.filter(({ r }) => st(r) === "Accepted risk").length} finding(s) are marked as accepted risk${accepted.length ? "; each should have a written justification and an approver" : ""}.${scopeNote}</p>
 ${acceptedRows ? `<table><tr><th>ID</th><th>Severity</th><th>Weakness</th><th>Justification</th><th>Recorded</th></tr>${acceptedRows}</table>` : ""}
 
 <h2 class="pb">7. Plan of action and milestones (POA&amp;M)</h2>
-${poam ? `<table><tr><th>ID</th><th>Severity</th><th>Weakness</th><th>Planned remediation</th><th>Responsible party</th><th>Scheduled completion</th><th>Status</th></tr>${poam}</table><p class="note">Responsible party and scheduled completion are left blank for the system owner to complete. The same items are available as a CSV export.</p>` : "<p>There are no open findings, so no POA&amp;M items are required.</p>"}
+${scopeNote ? "<p class=\"note\">High findings only.</p>" : ""}${poam ? `<table><tr><th>ID</th><th>Severity</th><th>Weakness</th><th>Planned remediation</th><th>Responsible party</th><th>Scheduled completion</th><th>Status</th></tr>${poam}</table><p class="note">Responsible party and scheduled completion are left blank for the system owner to complete. The same items are available as a CSV export.</p>` : "<p>There are no open findings, so no POA&amp;M items are required.</p>"}
 
 <h2>8. Limitations</h2>
 <p>This is an automated, static assessment. Checks on AI agents and MCP servers are configuration reviews; the prompt-injection and data-exposure checks are heuristics based on tool names and descriptions and indicate combinations to review, not proven exploits. CWE and OWASP references are indicative mappings to support triage; they are not a compliance certification and are not mapped to the controls of any specific framework. A complete authorization decision needs evidence this tool does not collect.</p>
 
 <h2>9. Review and sign-off</h2>
+${attestation ? "" : "<p class=\"note\">Full report: store a copy in your evidence repository and reference it in the authorization package.</p>"}
 <table class="sign"><tr><th>Role</th><th>Name</th><th>Signature</th><th>Date</th></tr>
 <tr><td>Assessor</td><td>${esc(meta.assessor)}</td><td></td><td></td></tr>
 <tr><td>System owner</td><td></td><td></td><td></td></tr>

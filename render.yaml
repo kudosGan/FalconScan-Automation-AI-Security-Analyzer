@@ -9,6 +9,15 @@ services:
     envVars:
       - key: FALCON_SETUP_TOKEN
         generateValue: true   # shown in the Render dashboard; you type it on the first-admin screen
+      # Sign in with GitHub: create an OAuth app whose callback URL is <your url>/api/account/github/callback
+      - key: FALCON_GITHUB_CLIENT_ID
+        sync: false
+      - key: FALCON_GITHUB_CLIENT_SECRET
+        sync: false
+      - key: FALCON_GITHUB_USERS
+        sync: false           # allowed accounts, e.g. kudosGan:admin,someone:viewer (role defaults to assessor)
+      - key: FALCON_PUBLIC_URL
+        sync: false           # e.g. https://falconscan-automation-ai-security.onrender.com
       - key: FALCON_COOKIE_SECURE
         value: "1"
       - key: FALCON_SCHEDULER

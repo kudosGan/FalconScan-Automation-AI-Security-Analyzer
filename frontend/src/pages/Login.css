@@ -13,3 +13,7 @@
 .login-card .pw input { width:100%; padding-right:38px; }
 .login-card .eye { position:absolute; right:4px; top:50%; transform:translateY(-50%); width:30px; height:30px; display:grid; place-items:center; padding:0; background:none; border:0; border-radius:4px; color:var(--muted); cursor:pointer; }
 .login-card .eye:hover { color:var(--navy); background:#eef3fb; }
+
+.login-card .btn.gh { display: block; text-align: center; text-decoration: none; background: #24292f; color: #fff; margin: 8px 0; }
+.login-card .btn.gh:hover { background: #32383f; }
+.login-card .or { text-align: center; margin: 4px 0 8px; }

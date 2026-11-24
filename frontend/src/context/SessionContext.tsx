@@ -8,6 +8,7 @@ type SessionState = {
   ready: boolean;                      // the first check with the server has finished
   authEnabled: boolean;                // false = single-user mode: no sign-in, data stays in this browser
   setupRequired: boolean;              // true until the first administrator exists
+  github: boolean;                     // "Sign in with GitHub" is set up on the server
   user: SessionUser | null;
   notice: string;
   login: (username: string, password: string) => Promise<void>;
@@ -28,13 +29,14 @@ export function SessionProvider({ children, staticSite = false }: { children: Re
   const [ready, setReady] = useState(false);
   const [authEnabled, setAuthEnabled] = useState(true);
   const [setupRequired, setSetupRequired] = useState(false);
+  const [github, setGithub] = useState(false);
   const [user, setUser] = useState<SessionUser | null>(null);
   const [notice, setNotice] = useState("");
 
   const refresh = useCallback(async () => {
     try {
       const s = await api.accountState();
-      setAuthEnabled(s.authEnabled); setSetupRequired(s.setupRequired); setUser(s.user); setNotice("");
+      setAuthEnabled(s.authEnabled); setSetupRequired(s.setupRequired); setGithub(!!s.github); setUser(s.user); setNotice("");
     } catch (e) { setNotice((e as Error).message); }
     setReady(true);
   }, []);
@@ -53,5 +55,5 @@ export function SessionProvider({ children, staticSite = false }: { children: Re
   const logout = async () => { try { await api.accountLogout(); } finally { setUser(null); setNotice(""); } };
   const can = (role: Role) => !authEnabled || (user !== null && RANK[user.role] >= RANK[role]);
 
-  return <Ctx.Provider value={{ ready, authEnabled, setupRequired, user, notice, login, setup, logout, can }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ ready, authEnabled, setupRequired, github, user, notice, login, setup, logout, can }}>{children}</Ctx.Provider>;
 }

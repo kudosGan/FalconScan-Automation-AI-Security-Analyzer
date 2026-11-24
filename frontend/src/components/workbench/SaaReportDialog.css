@@ -6,3 +6,5 @@
 .saa-foot { display:flex; justify-content:flex-end; gap:6px; padding:8px 12px; border-top:1px solid #ccc; }
 .saa-foot button { padding:3px 10px; font-size:12px; border:1px solid #888; background:#e6e6e6; cursor:pointer; }
 .saa-foot .primary { background:#cfe2ff; }
+.saa-body select { padding:4px 6px; border:1px solid #888; font:inherit; }
+.saa-body label.saa-check { display:flex; align-items:center; gap:6px; }

@@ -9,6 +9,7 @@ import PencilIcon, { type IconName } from "../components/PencilIcon";
 const platforms: { title: string; status: string; text: string }[] = [
   { title: "Power Automate", status: "Active", text: "Cloud flows and solution .zip files: triggers, actions, connectors, secrets, data flow and DLP policy." },
   { title: "UiPath", status: "Active", text: "project.json, .xaml workflows and .nupkg packages: credentials, insecure calls, logging and dependencies." },
+  { title: "n8n and Make", status: "Active", text: "Workflow exports: open webhooks, hard-coded secrets, plain HTTP, disabled TLS checks, shell and code steps, SQL built from data and AI services." },
   { title: "MCP servers and AI agents", status: "Active", text: "MCP configs and agent definitions: risky tools, auto-approval, exposed secrets and unsafe prompts." },
   { title: "Automation Anywhere and Blue Prism", status: "Basic checks", text: "Exports are scanned for secrets and plain-HTTP addresses. Vendor-specific rules are not yet built." },
 ];

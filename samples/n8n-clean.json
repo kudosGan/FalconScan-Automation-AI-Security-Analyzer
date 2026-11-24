@@ -1,0 +1,12 @@
+{
+  "name": "Daily report",
+  "active": true,
+  "nodes": [
+    {"id": "1", "name": "Every morning", "type": "n8n-nodes-base.scheduleTrigger", "typeVersion": 1, "position": [0, 0], "parameters": {}},
+    {"id": "2", "name": "Fetch metrics", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4, "position": [240, 0],
+     "parameters": {"method": "GET", "url": "https://metrics.example.com/api/daily", "authentication": "genericCredentialType"},
+     "credentials": {"httpHeaderAuth": {"id": "7", "name": "Metrics API"}}}
+  ],
+  "connections": {"Every morning": {"main": [[{"node": "Fetch metrics", "type": "main", "index": 0}]]}},
+  "settings": {"errorWorkflow": "99"}
+}

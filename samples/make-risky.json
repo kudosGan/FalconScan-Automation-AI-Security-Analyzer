@@ -1,0 +1,15 @@
+{
+  "name": "Order sync",
+  "flow": [
+    {"id": 1, "module": "gateway:CustomWebHook", "version": 1, "parameters": {"hook": 123456, "maxResults": 1}, "mapper": {}},
+    {"id": 2, "module": "http:ActionSendData", "version": 3, "parameters": {"handleErrors": false},
+     "mapper": {"url": "http://erp.partner.example.com/orders", "method": "post", "rejectUnauthorized": false,
+       "headers": [{"name": "X-Api-Key", "value": "k9Zp2QvT7mRw4XbN8cLd"}]}},
+    {"id": 3, "module": "mysql:ActionExecuteQuery", "version": 1, "parameters": {"__IMTCONN__": 42},
+     "mapper": {"query": "UPDATE orders SET status = 'sent' WHERE ref = '{{1.ref}}'"}},
+    {"id": 4, "module": "openai-gpt-3:CreateCompletion", "version": 1, "parameters": {"__IMTCONN__": 43}, "mapper": {"prompt": "{{1.notes}}"}},
+    {"id": 5, "module": "builtin:BasicRouter", "version": 1, "mapper": null, "routes": [
+      {"flow": [{"id": 6, "module": "builtin:Ignore", "version": 1, "parameters": {}, "mapper": {}}]}]}
+  ],
+  "metadata": {"version": 1}
+}

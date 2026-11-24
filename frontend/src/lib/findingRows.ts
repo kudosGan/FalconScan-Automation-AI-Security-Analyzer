@@ -5,6 +5,8 @@ export type FindingRow = {
   api: string; source: string; sink: string; directory: string;
   ruleId: string; detail: string; stepJson: unknown;
   cwe: string; owasp: string;
+  /** OWASP Low-Code/No-Code Top 10 code; empty for assessments saved before it was recorded. */
+  lcnc: string;
   /** Guidance from the scanner; empty for scans saved before it was recorded. */
   fix: string[]; example: Finding["example"]; alternative: Finding["alternative"];
   /** Identifies the same issue across rescans of one application. */
@@ -53,6 +55,7 @@ export function toRows(record: ScanRecord | undefined, previous?: ScanRecord): F
           stepJson: s.json,
           cwe: f.cwe ?? "—",
           owasp: f.owasp ?? "—",
+          lcnc: f.lcnc ?? "",
           fix: f.fix ?? [], example: f.example ?? null, alternative: f.alternative ?? null,
           fingerprint: fp,
           issueKey: `${app}|${fp}`,

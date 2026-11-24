@@ -11,17 +11,19 @@ type Props = {
   onClose: () => void;
   title?: string;
   systemLabel?: string;
+  /** Show the report type and "High findings only" choices (the SA&A report only). */
+  withScope?: boolean;
 };
 
 const KEY = "falconscan.saa";
 const load = (): Partial<SaaMeta> => { try { return JSON.parse(localStorage.getItem(KEY) ?? "{}"); } catch { return {}; } };
 
 /** Who the report is for. The people and organization are remembered; the system name follows the assessment. */
-export default function SaaReportDialog({ defaultSystem, onOpen, onDownload, onPdf, onClose, title = "SA&A assessment report", systemLabel = "System / application" }: Props) {
+export default function SaaReportDialog({ defaultSystem, onOpen, onDownload, onPdf, onClose, title = "SA&A assessment report", systemLabel = "System / application", withScope = false }: Props) {
   const saved = load();
   const [m, setM] = useState<SaaMeta>({
     system: defaultSystem, organization: saved.organization ?? "", assessor: saved.assessor ?? "",
-    authorizingOfficial: saved.authorizingOfficial ?? "", purpose: "",
+    authorizingOfficial: saved.authorizingOfficial ?? "", purpose: "", detail: "full", highOnly: true,
   });
   const set = (k: keyof SaaMeta) => (e: { target: { value: string } }) => setM((c) => ({ ...c, [k]: e.target.value }));
   const remember = () => {
@@ -40,6 +42,17 @@ export default function SaaReportDialog({ defaultSystem, onOpen, onDownload, onP
           <label>Organization<input value={m.organization} onChange={set("organization")} /></label>
           <label>Assessor<input value={m.assessor} onChange={set("assessor")} /></label>
           <label>Authorizing official<input value={m.authorizingOfficial} onChange={set("authorizingOfficial")} /></label>
+          {withScope && (
+            <>
+              <label>Report type
+                <select value={m.detail} onChange={(e) => setM((c) => ({ ...c, detail: e.target.value as SaaMeta["detail"] }))}>
+                  <option value="summary">Summary attestation (counts and POA&amp;M, no finding detail)</option>
+                  <option value="full">Full report (keep as evidence)</option>
+                </select></label>
+              <label className="saa-check"><input type="checkbox" checked={!!m.highOnly} onChange={(e) => setM((c) => ({ ...c, highOnly: e.target.checked }))} />
+                List High findings only (Medium and Low are still counted)</label>
+            </>
+          )}
           <label>Purpose or notes (optional)<textarea rows={3} value={m.purpose} onChange={set("purpose")} /></label>
         </div>
         <div className="saa-foot">

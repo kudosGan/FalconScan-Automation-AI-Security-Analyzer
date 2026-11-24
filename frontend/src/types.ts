@@ -7,7 +7,7 @@ export type LoginInfo = { user_code: string; verification_uri: string };
 
 export type Finding = {
   severity: Severity; ruleId: string; title: string; detail: string; location: string; jsonPath?: string[]; fix?: string[];
-  cwe?: string | null; owasp?: string | null; category?: string; fingerprint?: string;
+  cwe?: string | null; owasp?: string | null; lcnc?: string | null; category?: string; fingerprint?: string;
   alternative?: { title: string; steps: string[] } | null;
   example?: { before: string; after: string } | null;
 };
@@ -49,6 +49,8 @@ export type Application = {
 export type Rule = {
   id: string; title: string; severity: Severity; category: string;
   cwe: string | null; owasp: string | null; description: string;
+  /** OWASP Low-Code/No-Code Top 10 category, e.g. LCNC-SEC-08, and its name. */
+  lcnc?: string; lcncTitle?: string;
 };
 /** A named scan configuration: which rules run and any severity overrides. */
 /** A word or phrase that must not appear in an automation file. Plain text, matched without regard to capitals. */
@@ -72,7 +74,7 @@ export type FixResult = {
 // ---- accounts, shared data, schedules and tickets ----
 export type Role = "viewer" | "assessor" | "admin";
 export type SessionUser = { id: number; username: string; displayName: string; role: Role };
-export type AccountState = { authEnabled: boolean; setupRequired: boolean; user: SessionUser | null };
+export type AccountState = { authEnabled: boolean; setupRequired: boolean; github?: boolean; user: SessionUser | null };
 export type AdminUser = SessionUser & { active: boolean; createdAt: string | null; lastLogin: string | null; locked: boolean };
 export type AuditEntry = { id: number; ts: string; actor: string; role: string; action: string; target: string; detail: Record<string, unknown>; ip: string; hash: string };
 export type AuditVerify = { ok: boolean; checked: number; brokenAt: number | null; head: string };

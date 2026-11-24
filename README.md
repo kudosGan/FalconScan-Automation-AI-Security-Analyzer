@@ -88,6 +88,10 @@ descriptions: they flag combinations worth a decision, not proven exploits. Not 
 and runtime or live prompt testing. Secret values are hidden in results, reports and SARIF; automatic fixes cover only https URLs, disabled TLS
 settings, auto-approval and `require_approval: never`.
 
+## n8n and Make
+
+**Active.** Drop an exported n8n workflow (`.json`) or a Make scenario blueprint (`.json`) into any file dropzone, the command line or the API; Falcon Scan recognises them by their structure. Thirteen `WF-*` rules cover webhooks open to anyone, hard-coded secrets (in node settings, headers and code steps), plain-HTTP addresses, disabled TLS checks, shell and code steps, SQL built from workflow data, data sent to AI services, ignored errors, pinned test data, a missing error workflow and inactive workflows. Secret values are hidden in results and reports. Checks use the fields the products document; a field missing from an export means the check does not fire, so a clean result is not proof of safety. Samples are in `samples/` (`n8n-risky.json`, `n8n-clean.json`, `make-risky.json`). Zapier, Workato and ServiceNow Flow Designer are planned.
+
 ## UiPath and other RPA platforms
 
 **UiPath (active).** Drop `project.json`, `.xaml` workflows, or a `.nupkg` / `.zip` package into any file dropzone, the command line
@@ -182,5 +186,13 @@ GitHub Pages only hosts the landing page. To run the real application (sign-in, 
 3. Open the service address, choose **Login**, and on "Create the first administrator" enter your username and password and the setup token. The token is always required once it is set.
 4. Add other people under Administration ▸ Users. Give a read-only (viewer) account to anyone who only needs to look.
 5. Make the landing page link to it: in the GitHub repository open Settings ▸ Secrets and variables ▸ Actions ▸ **Variables**, add `APP_URL` with the service address (for example `https://falcon-scan.onrender.com`), then re-run "Publish public website". The Login buttons on the public site then open the live application.
+
+### Sign in with GitHub (optional)
+
+Instead of a password, people can sign in with their GitHub account, but only the usernames you list.
+
+1. On GitHub open Settings ▸ Developer settings ▸ OAuth Apps ▸ **New OAuth App**. Set the callback URL to `<service address>/api/account/github/callback` and create a client secret.
+2. In the Render **Environment** tab set `FALCON_GITHUB_CLIENT_ID`, `FALCON_GITHUB_CLIENT_SECRET`, `FALCON_PUBLIC_URL` (the service address) and `FALCON_GITHUB_USERS`, for example `kudosGan:admin,friend:viewer`. The role defaults to `assessor`.
+3. The login page then shows **Sign in with GitHub**, and the first-administrator form is hidden. Role changes in `FALCON_GITHUB_USERS` apply at the next sign-in.
 
 Things to know about the free Render plan: the service sleeps when idle (the first visit after a pause takes about a minute), and there is no disk, so the database is wiped whenever it restarts. For data that persists, use a paid plan and uncomment the `disk` section in `render.yaml`. Scheduled scans are off, and PDF reports fall back to the browser's print dialog, because the container has no Chrome or Edge.

@@ -41,7 +41,7 @@ def signin(name: str, role: str) -> TestClient:
 def test_first_run_needs_the_setup_token_off_the_server_and_only_works_once(secure):
     c = new_client()
     s = c.get("/account/state").json()
-    assert s == {"authEnabled": True, "setupRequired": True, "user": None}
+    assert s == {"authEnabled": True, "setupRequired": True, "github": False, "user": None}
     assert c.get("/rules").status_code == 401 and c.post("/scan/upload", json={"files": []}).status_code == 401
     body = {"username": "root", "password": PW, "displayName": "Root"}
     assert c.post("/account/setup", json={**body, "setupToken": "wrong"}).status_code == 403
@@ -211,3 +211,72 @@ def test_without_a_setup_token_only_the_server_itself_may_create_the_first_admin
     assert new_client().post("/account/setup", json=body).status_code == 403
     monkeypatch.setattr(enterprise, "client_ip", lambda request: "127.0.0.1")
     assert new_client().post("/account/setup", json=body).status_code == 200
+
+
+# ---- sign in with GitHub ------------------------------------------------------------------------------------
+
+class _Resp:
+    def __init__(self, data): self._d = data
+    def json(self): return self._d
+
+
+class _FakeHttpx:
+    """Stands in for httpx.Client: the token exchange and the user lookup."""
+    def __init__(self, login="octo", token="tok"): self.login, self.token = login, token
+    def __call__(self, **kw): return self
+    def __enter__(self): return self
+    def __exit__(self, *a): return False
+    def post(self, url, data=None): return _Resp({"access_token": self.token} if self.token else {})
+    def get(self, url, headers=None): return _Resp({"login": self.login, "name": "Octo Cat"})
+
+
+@pytest.fixture
+def gh(secure, monkeypatch):
+    import githublogin
+    monkeypatch.setenv("FALCON_GITHUB_CLIENT_ID", "cid")
+    monkeypatch.setenv("FALCON_GITHUB_CLIENT_SECRET", "csecret")
+    monkeypatch.setenv("FALCON_GITHUB_USERS", "Octo:admin, reader:viewer, plain")
+    monkeypatch.setenv("FALCON_PUBLIC_URL", "https://falcon.example")
+    return githublogin
+
+
+def _start(c):
+    r = c.get("/account/github/start", follow_redirects=False)
+    assert r.status_code == 302 and r.headers["location"].startswith("https://github.com/login/oauth/authorize?")
+    state = r.headers["location"].split("state=")[1].split("&")[0]
+    return state
+
+
+def test_github_sign_in_hides_first_admin_setup_and_allows_listed_users(gh, monkeypatch):
+    c = new_client()
+    s = c.get("/account/state").json()
+    assert s["github"] is True and s["setupRequired"] is False
+    state = _start(c)
+    monkeypatch.setattr(gh.httpx, "Client", _FakeHttpx("octo"))
+    r = c.get(f"/account/github/callback?code=abc&state={state}", follow_redirects=False)
+    assert r.status_code == 302 and r.headers["location"] == "https://falcon.example/workbench"
+    me_ = c.get("/account/state").json()["user"]
+    assert me_["username"] == "gh-octo" and me_["role"] == "admin"
+    assert c.get("/rules").status_code == 200
+
+
+def test_github_sign_in_refuses_unlisted_users_and_bad_state(gh, monkeypatch):
+    c = new_client()
+    state = _start(c)
+    monkeypatch.setattr(gh.httpx, "Client", _FakeHttpx("stranger"))
+    r = c.get(f"/account/github/callback?code=abc&state={state}", follow_redirects=False)
+    assert "error=" in r.headers["location"] and c.get("/rules").status_code == 401
+    c2 = new_client(); _start(c2)
+    r = c2.get("/account/github/callback?code=abc&state=forged", follow_redirects=False)
+    assert "error=" in r.headers["location"] and c2.get("/rules").status_code == 401
+    assert new_client().get("/account/github/callback?code=abc&state=x", follow_redirects=False).headers["location"].find("error=") > 0
+
+
+def test_github_default_role_is_assessor_and_start_needs_configuration(gh, monkeypatch):
+    c = new_client(); state = _start(c)
+    monkeypatch.setattr(gh.httpx, "Client", _FakeHttpx("plain"))
+    c.get(f"/account/github/callback?code=abc&state={state}", follow_redirects=False)
+    assert c.get("/account/state").json()["user"]["role"] == "assessor"
+    monkeypatch.delenv("FALCON_GITHUB_CLIENT_ID")
+    r = new_client().get("/account/github/start", follow_redirects=False)
+    assert "error=" in r.headers["location"]

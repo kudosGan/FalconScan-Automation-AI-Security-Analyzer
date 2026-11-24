@@ -1,6 +1,6 @@
 import "./Login.css";
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import Logo from "../components/Logo";
 import { BRAND } from "../brand";
 import { useSession } from "../context/SessionContext";
@@ -24,7 +24,9 @@ function PasswordInput({ value, onChange, autoComplete }: { value: string; onCha
 
 /** Sign-in, or the first-run screen that creates the first administrator. */
 export default function Login() {
-  const { setupRequired, login, setup, notice } = useSession();
+  const { setupRequired, github, login, setup, notice } = useSession();
+  const [params] = useSearchParams();
+  const githubError = params.get("error") || "";
   const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [password, setPassword] = useState("");
@@ -53,6 +55,13 @@ export default function Login() {
         <h2>{setupRequired ? "Create the first administrator" : "Sign in"}</h2>
         {setupRequired && <p className="muted">No accounts exist yet. This account will be able to add everyone else.</p>}
         {notice && !err && <p className="muted">{notice}</p>}
+        {github && (
+          <>
+            <a className="btn big gh" href="/api/account/github/start">Sign in with GitHub</a>
+            {githubError && <p className="error" role="alert">{githubError}</p>}
+            <p className="muted or">or use a username and password</p>
+          </>
+        )}
         <label>Username<input value={username} onChange={(e) => setUsername(e.target.value)} autoComplete="username" autoFocus required /></label>
         {setupRequired && <label>Display name (optional)<input value={displayName} onChange={(e) => setDisplayName(e.target.value)} /></label>}
         <label>Password<PasswordInput value={password} onChange={setPassword} autoComplete={setupRequired ? "new-password" : "current-password"} /></label>

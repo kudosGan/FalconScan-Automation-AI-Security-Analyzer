@@ -1,0 +1,21 @@
+{
+  "name": "Lead intake to CRM",
+  "active": true,
+  "nodes": [
+    {"id": "1", "name": "Incoming lead", "type": "n8n-nodes-base.webhook", "typeVersion": 2, "position": [0, 0],
+     "parameters": {"httpMethod": "POST", "path": "lead-intake", "authentication": "none"}},
+    {"id": "2", "name": "Save to CRM", "type": "n8n-nodes-base.httpRequest", "typeVersion": 4, "position": [240, 0],
+     "parameters": {"method": "POST", "url": "http://crm.partner.example.com/api/leads", "sendHeaders": true,
+       "headerParameters": {"parameters": [{"name": "Authorization", "value": "Bearer 8f3a91c27d4e45b0a6c1d2e3f4a5b6c7"}]},
+       "options": {"allowUnauthorizedCerts": true}}},
+    {"id": "3", "name": "Look up customer", "type": "n8n-nodes-base.postgres", "typeVersion": 2, "position": [480, 0],
+     "parameters": {"operation": "executeQuery", "query": "SELECT * FROM customers WHERE email = '{{ $json.body.email }}'"}},
+    {"id": "4", "name": "Summarise with AI", "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi", "typeVersion": 1, "position": [720, 0],
+     "parameters": {"model": "gpt-4o"}},
+    {"id": "5", "name": "Clean up", "type": "n8n-nodes-base.executeCommand", "typeVersion": 1, "position": [960, 0],
+     "continueOnFail": true, "parameters": {"command": "rm -rf /tmp/leads/{{ $json.body.folder }}"}}
+  ],
+  "connections": {"Incoming lead": {"main": [[{"node": "Save to CRM", "type": "main", "index": 0}]]}},
+  "pinData": {"Incoming lead": [{"json": {"email": "jane.doe@example.com", "phone": "+1 555 0100"}}]},
+  "settings": {}
+}

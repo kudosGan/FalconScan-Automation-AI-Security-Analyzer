@@ -15,3 +15,7 @@
 .wiz-browse:hover { background:#cfe2ff; }
 .wiz-note { margin:4px 0 0 118px; font-size:11px; color:#067647; }
 .wiz-note.muted { color:var(--muted); }
+.wiz-group { border:0; border-top:1px solid #ccc; margin:0 0 8px; padding:4px 0 0; }
+.wiz-group legend { font-weight:600; padding:0 6px 0 0; }
+.wiz-radio { display:flex; align-items:center; gap:6px; padding:3px 0; cursor:pointer; }
+.wiz-browse.wide { width:auto; padding:0 8px; }

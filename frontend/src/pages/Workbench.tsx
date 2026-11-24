@@ -269,7 +269,7 @@ Its saved assessments stay in My Assessments.`)) return;
   };
 
   const saaFilename = (ext: string) => `falconscan-saa-${(record?.appName ?? "assessment").replace(/[^\w.-]+/g, "_")}-${record?.id}.${ext}`;
-  const saaHtml = (m: SaaMeta) => toSaaHtml(record!, rows, issueOf, diffData, m);
+  const saaHtml = (m: SaaMeta) => toSaaHtml(record!, rows, issueOf, diffData, m, rulesList);
   const saaOpenReport = (m: SaaMeta) => { openPrintable(saaHtml(m)); note("SA&A report opened: use Print > Save as PDF for a PDF copy."); };
   const saaDownload = (m: SaaMeta) => { download(saaFilename("html"), saaHtml(m), "text/html;charset=utf-8"); note("SA&A report downloaded."); };
   const saaPdf = async (m: SaaMeta) => {
@@ -564,7 +564,7 @@ Its saved assessments stay in My Assessments.`)) return;
       {viewJson !== null && <JsonViewer data={viewJson} onClose={() => setViewJson(null)} />}
       {cfgOpen && <ScanConfigDialog policy={policy} onClose={() => setCfgOpen(false)}
         onSave={(p) => { setPolicy(p); setCfgOpen(false); note(`Scan configuration "${p.name}" saved (${p.disabled.length} rule(s) off, ${Object.keys(p.severity).length} override(s)).`); }} />}
-      {saaOpen && record && <SaaReportDialog defaultSystem={record.appName ?? ""} onClose={() => setSaaOpen(false)}
+      {saaOpen && record && <SaaReportDialog withScope defaultSystem={record.appName ?? ""} onClose={() => setSaaOpen(false)}
         onOpen={saaOpenReport} onDownload={saaDownload} onPdf={saaPdf} />}
       {execOpen && <SaaReportDialog title="Executive summary" systemLabel="Scope" defaultSystem="All applications" onClose={() => setExecOpen(false)}
         onOpen={(m) => openPrintable(execHtml(m))} onDownload={(m) => download("falconscan-executive-summary.html", execHtml(m), "text/html;charset=utf-8")} onPdf={execPdf} />}
